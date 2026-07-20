@@ -33,6 +33,8 @@ public class DependencySecurityCandidatesFinder {
     }
 
     public void findDependencySecurityCandidates(File pomFile) throws DependencyCollectionException, ModelBuildingException {
+        // Build the dependency graph ONCE — it's expensive (network I/O to resolve parent/transitive POMs)
+        DependencyNode dependencyNode = localProjectAnalyzer.buildGraphFromPom(pomFile);
 
         for (SonatypeScanReport.VulnerabilityDetails vulnerability : report.vulnerabilities()) {
             String packageUrl = vulnerability.packageUrl();
@@ -42,7 +44,12 @@ public class DependencySecurityCandidatesFinder {
                     .toList();
 
             Vulnerability vulnerabilityDetails = extractFromPackageUrl(packageUrl, versionsToFix);
-            DependencyNode dependencyNode = localProjectAnalyzer.buildGraphFromPom(pomFile);
+            System.out.printf("Вразливий артефакт: %s:%s:%s (рекомендовані виправлення: %s)%n",
+                    vulnerabilityDetails.groupId(),
+                    vulnerabilityDetails.artifactId(),
+                    vulnerabilityDetails.version(),
+                    versionsToFix);
+
             Artifact directDependency = localProjectAnalyzer.findDirectDependencyForVulnerability(dependencyNode, vulnerabilityDetails.groupId(), vulnerabilityDetails.artifactId());
             if (directDependency == null) {
                 System.out.println("Вразливість не знайдена у графі залежностей.");

@@ -155,11 +155,23 @@ public class NexusVersionResolver {
                 "(" + currentVersion + ",)"
         );
 
+        Authentication authentication = new AuthenticationBuilder()
+                .addUsername(nexusUsername)
+                .addPassword(nexusPassword)
+                .build();
+
         RemoteRepository repository = new RemoteRepository.Builder(
                 "nexus",
                 "default",
                 nexusUrl
-        ).build();
+        )
+                .setAuthentication(authentication)
+                .setPolicy(new org.eclipse.aether.repository.RepositoryPolicy(
+                        true, // enabled
+                        org.eclipse.aether.repository.RepositoryPolicy.UPDATE_POLICY_ALWAYS,
+                        org.eclipse.aether.repository.RepositoryPolicy.CHECKSUM_POLICY_IGNORE
+                ))
+                .build();
 
         VersionRangeRequest request = new VersionRangeRequest(
                 artifact,
@@ -168,12 +180,16 @@ public class NexusVersionResolver {
         );
 
         try {
-            return repositorySystem
-                    .resolveVersionRange(session, request)
-                    .getVersions()
+            VersionRangeResult result = repositorySystem
+                    .resolveVersionRange(session, request);
+            List<String> versions = result.getVersions()
                     .stream()
                     .map(Version::toString)
                     .toList();
+            System.out.printf("  [DEBUG] getNewerVersions(%s:%s, >%s) → %d versions found, exceptions: %s%n",
+                    groupId, artifactId, currentVersion, versions.size(),
+                    result.getExceptions().isEmpty() ? "none" : result.getExceptions());
+            return versions;
         } catch (VersionRangeResolutionException exception) {
             throw new IllegalStateException(
                     "Cannot retrieve versions newer than "

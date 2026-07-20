@@ -41,7 +41,8 @@ public class LocalProjectAnalyzer {
         DefaultModelBuildingRequest defaultModelBuildingRequest = new DefaultModelBuildingRequest()
                 .setPomFile(pomFile)
                 .setSystemProperties(System.getProperties())
-                .setValidationLevel(DefaultModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+                .setValidationLevel(DefaultModelBuildingRequest.VALIDATION_LEVEL_MINIMAL)
+                .setModelResolver(new AetherModelResolver(repositorySystem, repositorySystemSession, repositories));
 
         Model effectiveModel = modelBuilder.build(defaultModelBuildingRequest).getEffectiveModel();
         List<Dependency> aetherDependencies = effectiveModel.getDependencies().stream()

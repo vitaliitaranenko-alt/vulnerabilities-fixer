@@ -1,5 +1,7 @@
 package com.vulncheck;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.List;
 
 public record SonatypeScanReport(
@@ -20,6 +22,7 @@ public record SonatypeScanReport(
     ) {
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public record SecurityIssue(
             String reference,
             String severity,

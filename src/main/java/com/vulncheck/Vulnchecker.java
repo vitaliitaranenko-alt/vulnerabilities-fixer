@@ -88,11 +88,11 @@ public class Vulnchecker implements Runnable {
                 System.getProperty("user.home"),
                 ".m2",
                 "repository"
-        )),
+        ), credentials),
                 credentials
         );
         try {
-            dependencySecurityCandidatesFinder.findDependencySecurityCandidates(path.resolve("pom.xml").toFile());
+            dependencySecurityCandidatesFinder.findDependencySecurityCandidates(filePath.resolve("pom.xml").toFile());
         } catch (DependencyCollectionException | ModelBuildingException e) {
             System.out.println("Failed to build dependency tree");
             throw new RuntimeException(e);
